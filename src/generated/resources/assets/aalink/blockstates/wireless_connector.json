@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "aalink:block/wireless_connector"
+    }
+  }
+}
