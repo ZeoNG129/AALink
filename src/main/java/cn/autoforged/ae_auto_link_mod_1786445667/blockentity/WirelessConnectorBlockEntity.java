@@ -29,13 +29,13 @@ import net.minecraft.world.level.block.state.BlockState;
  * <p>本方块实体只负责：(1) 创建/销毁网格节点并持久化；(2) 把自己登记为桥接中枢，供
  * {@link AutoLinkBridge} 把设备接进来。
  */
-public class P2PTunnelBlockEntity extends BlockEntity implements IInWorldGridNodeHost {
+public class WirelessConnectorBlockEntity extends BlockEntity implements IInWorldGridNodeHost {
 
     private final IManagedGridNode mainNode;
     private boolean nodeCreated;
 
-    public P2PTunnelBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.P2P_TUNNEL.get(), pos, state);
+    public WirelessConnectorBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.WIRELESS_CONNECTOR.get(), pos, state);
         // 创建 in-world 网格节点：暴露在全部六个面，放置后与相邻 ME 设备（线缆/控制器/机器）自动建连，
         // 从而"放在网络里"即接入该 ME 网格。
         this.mainNode = GridHelper.createManagedNode(this, new NodeListener())
@@ -44,7 +44,7 @@ public class P2PTunnelBlockEntity extends BlockEntity implements IInWorldGridNod
             .setIdlePowerUsage(0.0);
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, P2PTunnelBlockEntity be) {
+    public static void tick(Level level, BlockPos pos, BlockState state, WirelessConnectorBlockEntity be) {
         if (level.isClientSide) {
             return;
         }
@@ -101,9 +101,9 @@ public class P2PTunnelBlockEntity extends BlockEntity implements IInWorldGridNod
     /**
      * 网格节点监听器：节点状态变化时标记方块为已变更以便存档。
      */
-    private static final class NodeListener implements IGridNodeListener<P2PTunnelBlockEntity> {
+    private static final class NodeListener implements IGridNodeListener<WirelessConnectorBlockEntity> {
         @Override
-        public void onSaveChanges(P2PTunnelBlockEntity owner, IGridNode node) {
+        public void onSaveChanges(WirelessConnectorBlockEntity owner, IGridNode node) {
             owner.setChanged();
         }
     }

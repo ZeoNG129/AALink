@@ -14,6 +14,6 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        simpleBlockWithItem(ModBlocks.P2P_TUNNEL_BLOCK.get(), cubeAll(ModBlocks.P2P_TUNNEL_BLOCK.get()));
+        simpleBlockWithItem(ModBlocks.WIRELESS_CONNECTOR.get(), cubeAll(ModBlocks.WIRELESS_CONNECTOR.get()));
     }
 }

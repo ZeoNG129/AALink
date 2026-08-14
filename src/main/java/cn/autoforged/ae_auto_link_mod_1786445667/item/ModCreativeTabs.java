@@ -16,10 +16,10 @@ public class ModCreativeTabs {
 
     public static final RegistryObject<CreativeModeTab> AE_AUTO_LINK_TAB = CREATIVE_MODE_TABS.register("main",
         () -> CreativeModeTab.builder()
-            .icon(() -> new ItemStack(ModBlocks.P2P_TUNNEL_BLOCK.get()))
+            .icon(() -> new ItemStack(ModBlocks.WIRELESS_CONNECTOR.get()))
             .title(Component.translatable("creativetab." + MainMod.MOD_ID + ".main"))
             .displayItems((params, output) -> {
-                output.accept(ModBlocks.P2P_TUNNEL_BLOCK.get());
+                output.accept(ModBlocks.WIRELESS_CONNECTOR.get());
             })
             .build());
 

@@ -12,11 +12,11 @@ public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
         DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MainMod.MOD_ID);
 
-    public static final RegistryObject<BlockEntityType<P2PTunnelBlockEntity>> P2P_TUNNEL =
+    public static final RegistryObject<BlockEntityType<WirelessConnectorBlockEntity>> WIRELESS_CONNECTOR =
         BLOCK_ENTITIES.register("wireless_connector",
             () -> BlockEntityType.Builder.of(
-                P2PTunnelBlockEntity::new,
-                ModBlocks.P2P_TUNNEL_BLOCK.get()
+                WirelessConnectorBlockEntity::new,
+                ModBlocks.WIRELESS_CONNECTOR.get()
             ).build(null));
 
     public static void register(IEventBus modEventBus) {

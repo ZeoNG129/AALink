@@ -13,8 +13,8 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS =
         DeferredRegister.create(ForgeRegistries.ITEMS, MainMod.MOD_ID);
 
-    public static final RegistryObject<Item> P2P_TUNNEL_BLOCK_ITEM = ITEMS.register("wireless_connector",
-        () -> new BlockItem(ModBlocks.P2P_TUNNEL_BLOCK.get(), new Item.Properties()));
+    public static final RegistryObject<Item> WIRELESS_CONNECTOR_ITEM = ITEMS.register("wireless_connector",
+        () -> new BlockItem(ModBlocks.WIRELESS_CONNECTOR.get(), new Item.Properties()));
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

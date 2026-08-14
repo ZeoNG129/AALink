@@ -17,7 +17,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * 全局桥接器：监听玩家放置方块事件，把任意位置放置的 AE 设备接入"无线桥接中枢"所在网络。
  *
  * <p>机制：每当一个 AE 设备方块（承载 AE 网格节点的方块，如 ME 线缆、输入总线、机器等）被放置时，
- * 取出该设备的网格节点，与 {@link P2PTunnelBlockEntity} 登记的中枢节点做一次
+ * 取出该设备的网格节点，与 {@link WirelessConnectorBlockEntity} 登记的中枢节点做一次
  * {@link GridHelper#createConnection}。AE2 的 GridConnection 是"逻辑连接"，不依赖节点间的物理位置，
  * 因此无论设备放在多远的距离、甚至其它维度，都能直接并入中枢所在的 ME 网格——满足"无视距离无视维度"。
  *
@@ -95,7 +95,7 @@ public final class AutoLinkBridge {
         }
         BlockPos pos = event.getBlockSnapshot().getPos();
         BlockEntity be = serverLevel.getBlockEntity(pos);
-        if (be == null || be instanceof P2PTunnelBlockEntity) {
+        if (be == null || be instanceof WirelessConnectorBlockEntity) {
             return; // 无实体或中枢本身
         }
         // 缓存已知承载 AE 节点的方块实体类型：
@@ -156,7 +156,7 @@ public final class AutoLinkBridge {
         }
         for (java.util.Map.Entry<BlockPos, BlockEntity> entry : levelChunk.getBlockEntities().entrySet()) {
             BlockEntity be = entry.getValue();
-            if (be == null || be instanceof P2PTunnelBlockEntity) {
+            if (be == null || be instanceof WirelessConnectorBlockEntity) {
                 continue;
             }
             PENDING.add(new PlacementRef(serverLevel, entry.getKey()));

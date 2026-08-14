@@ -15,7 +15,7 @@ public class ModBlockLootProvider extends BlockLootSubProvider {
     @Override
     protected void generate() {
         // drop: self —— 破坏后掉落方块自身
-        this.dropSelf(ModBlocks.P2P_TUNNEL_BLOCK.get());
+        this.dropSelf(ModBlocks.WIRELESS_CONNECTOR.get());
     }
 
     @Override

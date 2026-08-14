@@ -19,6 +19,6 @@ public class ModBlockTagProvider extends BlockTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         // required_tool: pickaxe —— 需镐挖掘（配合方块的 requiresCorrectToolForDrops）
-        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.P2P_TUNNEL_BLOCK.get());
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.WIRELESS_CONNECTOR.get());
     }
 }
