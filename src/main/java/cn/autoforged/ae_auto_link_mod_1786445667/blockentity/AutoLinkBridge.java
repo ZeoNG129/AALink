@@ -143,21 +143,26 @@ public final class AutoLinkBridge {
      * 服务器重启后，已放置的设备不会触发放置事件，但随区块重新加载，
      * 通过这里把设备节点重新接入中枢，保证网络不丢。
      * 不依赖中枢是否已就绪：设备位置先记录，中枢就绪后 bridgePending 会自动建连。
+     *
+     * <p>只恢复"曾经成功桥接过"的设备（{@link AALinkSavedData#isLinked}）。
+     * 开关关闭期间放置的设备从未被桥接，重进存档后保持断连，不会被这里强制接入。
      */
     @SubscribeEvent
     public static void onChunkLoad(net.minecraftforge.event.level.ChunkEvent.Load event) {
-        // 区块加载重连不受开关影响：这是恢复已建立的连接，不是自动连接新设备。
-        // 这样即使开关关闭，服务器重启/重进后已连接设备也能恢复。
         if (!(event.getLevel() instanceof ServerLevel serverLevel)) {
             return;
         }
         if (!(event.getChunk() instanceof net.minecraft.world.level.chunk.LevelChunk levelChunk)) {
             return;
         }
+        AALinkSavedData data = AALinkSavedData.get(serverLevel);
         for (java.util.Map.Entry<BlockPos, BlockEntity> entry : levelChunk.getBlockEntities().entrySet()) {
             BlockEntity be = entry.getValue();
             if (be == null || be instanceof WirelessConnectorBlockEntity) {
                 continue;
+            }
+            if (!data.isLinked(entry.getKey())) {
+                continue; // 从未桥接过的设备（如开关关闭时放置的）不重连
             }
             PENDING.add(new PlacementRef(serverLevel, entry.getKey()));
         }
@@ -192,6 +197,8 @@ public final class AutoLinkBridge {
                         continue;
                     }
                     GridHelper.createConnection(deviceNode, hubNode);
+                    // 记录已桥接设备：重进存档/区块重载时只恢复这些设备
+                    AALinkSavedData.get(ref.level).link(ref.pos);
                 } catch (Exception ignored) {
                     // 重复建连等场景安全忽略
                 }
