@@ -206,7 +206,8 @@ public final class AutoLinkBridge {
         }
     }
 
-    private static IGridNode resolveDeviceNode(ServerLevel level, BlockPos pos) {
+    /** 解析方块实体的 AE 网格节点（部件优先，回退宿主节点）；供桥接与无线连接工具复用 */
+    public static IGridNode resolveDeviceNode(ServerLevel level, BlockPos pos) {
         // 优先处理 AE2 部件（Part）：输出总线/输入总线/存储总线等挂在电缆总线里，
         // 它们不是 IInWorldGridNodeHost 方块，必须通过 IPartHost.getPart(side) 取部件自己的节点。
         BlockEntity be = level.getBlockEntity(pos);

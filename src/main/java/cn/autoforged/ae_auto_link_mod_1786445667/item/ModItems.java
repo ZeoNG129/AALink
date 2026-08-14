@@ -16,6 +16,9 @@ public class ModItems {
     public static final RegistryObject<Item> WIRELESS_CONNECTOR_ITEM = ITEMS.register("wireless_connector",
         () -> new BlockItem(ModBlocks.WIRELESS_CONNECTOR.get(), new Item.Properties()));
 
+    public static final RegistryObject<Item> WIRELESS_LINK_TOOL = ITEMS.register("wireless_link_tool",
+        () -> new WirelessLinkTool(new Item.Properties().stacksTo(1)));
+
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
     }

@@ -1,0 +1,181 @@
+package cn.autoforged.ae_auto_link_mod_1786445667.item;
+
+import cn.autoforged.ae_auto_link_mod_1786445667.blockentity.AALinkSavedData;
+import cn.autoforged.ae_auto_link_mod_1786445667.blockentity.AutoLinkBridge;
+import cn.autoforged.ae_auto_link_mod_1786445667.blockentity.WirelessConnectorBlockEntity;
+import appeng.api.networking.GridHelper;
+import appeng.api.networking.IGridNode;
+import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * 无线连接工具：把任意 AE 设备手动接入已绑定无线连接器所在的 ME 网络。
+ *
+ * <ul>
+ *   <li>蹲下右键无线连接器 → 绑定（记录连接器位置与维度到物品 NBT）</li>
+ *   <li>蹲下对着空气右键 → 取消绑定</li>
+ *   <li>右键任意能连接 AE 网络的方块（线缆/总线/机器等）→ 把该设备接入已绑定连接器所在网络</li>
+ * </ul>
+ *
+ * <p>与自动桥接（{@link AutoLinkBridge}）同一套逻辑：{@link GridHelper#createConnection}
+ * 建立不依赖物理位置的逻辑连接，无视距离与维度；连接结果写入 {@link AALinkSavedData}，
+ * 重进存档/区块重载后保持。
+ */
+public class WirelessLinkTool extends Item {
+
+    private static final String TAG_BINDING = "aalink.binding";
+    private static final String TAG_DIM = "dim";
+    private static final String TAG_X = "x";
+    private static final String TAG_Y = "y";
+    private static final String TAG_Z = "z";
+
+    public WirelessLinkTool(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Level level = context.getLevel();
+        Player player = context.getPlayer();
+        if (player == null) {
+            return InteractionResult.PASS;
+        }
+        ItemStack stack = context.getItemInHand();
+        BlockPos pos = context.getClickedPos();
+        BlockEntity be = level.getBlockEntity(pos);
+
+        // 蹲下右键无线连接器 → 绑定
+        if (player.isShiftKeyDown()) {
+            if (be instanceof WirelessConnectorBlockEntity) {
+                if (!level.isClientSide) {
+                    bind(stack, level, pos);
+                    player.sendSystemMessage(Component.literal(
+                            "无线连接工具已绑定: " + level.dimension().location() + " " + pos.toShortString()));
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+            return InteractionResult.PASS; // 蹲下右键其它方块：不消费
+        }
+
+        // 非蹲下右键无线连接器：提示用蹲下绑定
+        if (be instanceof WirelessConnectorBlockEntity) {
+            if (!level.isClientSide) {
+                player.sendSystemMessage(Component.literal("请蹲下右键无线连接器进行绑定"));
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
+
+        // 非蹲下右键其它方块：尝试接入网络
+        if (!level.isClientSide) {
+            connectDevice((ServerLevel) level, player, stack, pos);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        // 蹲下对着空气右键 → 取消绑定
+        if (player.isShiftKeyDown() && isBound(stack)) {
+            if (!level.isClientSide) {
+                clearBinding(stack);
+                player.sendSystemMessage(Component.literal("无线连接工具已取消绑定"));
+            }
+            return level.isClientSide
+                    ? InteractionResultHolder.success(stack)
+                    : InteractionResultHolder.consume(stack);
+        }
+        return InteractionResultHolder.pass(stack);
+    }
+
+    private static void bind(ItemStack stack, Level level, BlockPos pos) {
+        CompoundTag binding = new CompoundTag();
+        binding.putString(TAG_DIM, level.dimension().location().toString());
+        binding.putInt(TAG_X, pos.getX());
+        binding.putInt(TAG_Y, pos.getY());
+        binding.putInt(TAG_Z, pos.getZ());
+        stack.getOrCreateTag().put(TAG_BINDING, binding);
+    }
+
+    private static boolean isBound(ItemStack stack) {
+        return stack.getTag() != null && stack.getTag().contains(TAG_BINDING);
+    }
+
+    private static void clearBinding(ItemStack stack) {
+        if (stack.getTag() != null) {
+            stack.getTag().remove(TAG_BINDING);
+        }
+    }
+
+    private static void connectDevice(ServerLevel level, Player player, ItemStack stack, BlockPos devicePos) {
+        if (!isBound(stack)) {
+            player.sendSystemMessage(Component.literal("无线连接工具未绑定：请蹲下右键无线连接器进行绑定"));
+            return;
+        }
+        CompoundTag binding = stack.getTag().getCompound(TAG_BINDING);
+        ResourceLocation dim = ResourceLocation.tryParse(binding.getString(TAG_DIM));
+        BlockPos hubPos = new BlockPos(binding.getInt(TAG_X), binding.getInt(TAG_Y), binding.getInt(TAG_Z));
+        ServerLevel hubLevel = dim == null
+                ? null
+                : level.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, dim));
+        if (hubLevel == null) {
+            player.sendSystemMessage(Component.literal("找不到绑定的无线连接器所在维度"));
+            return;
+        }
+        if (!(hubLevel.getBlockEntity(hubPos) instanceof WirelessConnectorBlockEntity hub)) {
+            player.sendSystemMessage(Component.literal("绑定的无线连接器不存在或所在区块未加载"));
+            return;
+        }
+        IGridNode hubNode = hub.getHubNode();
+        if (hubNode == null || hubNode.getGrid() == null) {
+            player.sendSystemMessage(Component.literal("无线连接器网络节点尚未就绪"));
+            return;
+        }
+        IGridNode deviceNode = AutoLinkBridge.resolveDeviceNode(level, devicePos);
+        if (deviceNode == null) {
+            player.sendSystemMessage(Component.literal("该方块无法连接 AE 网络"));
+            return;
+        }
+        if (deviceNode == hubNode || deviceNode.getGrid() == hubNode.getGrid()) {
+            player.sendSystemMessage(Component.literal("该设备已在 AE 网络中"));
+            return;
+        }
+        try {
+            GridHelper.createConnection(deviceNode, hubNode);
+        } catch (Exception e) {
+            player.sendSystemMessage(Component.literal("连接失败: " + e.getMessage()));
+            return;
+        }
+        AALinkSavedData.get(level).link(devicePos); // 持久化：重进存档后保持连接
+        player.sendSystemMessage(Component.literal("设备已接入 AE 网络"));
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        if (isBound(stack)) {
+            CompoundTag binding = stack.getTag().getCompound(TAG_BINDING);
+            tooltip.add(Component.literal("已绑定: " + binding.getString(TAG_DIM) + " ("
+                    + binding.getInt(TAG_X) + ", " + binding.getInt(TAG_Y) + ", " + binding.getInt(TAG_Z) + ")"));
+        } else {
+            tooltip.add(Component.literal("未绑定 — 蹲下右键无线连接器绑定"));
+        }
+        tooltip.add(Component.literal("蹲下右键空气取消绑定；右键 AE 设备接入网络"));
+    }
+}

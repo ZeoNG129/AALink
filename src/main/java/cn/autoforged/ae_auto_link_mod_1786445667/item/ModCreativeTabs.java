@@ -20,6 +20,7 @@ public class ModCreativeTabs {
             .title(Component.translatable("creativetab." + MainMod.MOD_ID + ".main"))
             .displayItems((params, output) -> {
                 output.accept(ModBlocks.WIRELESS_CONNECTOR.get());
+                output.accept(ModItems.WIRELESS_LINK_TOOL.get());
             })
             .build());
 
