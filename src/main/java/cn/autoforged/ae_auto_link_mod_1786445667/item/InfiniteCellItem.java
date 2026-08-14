@@ -4,15 +4,9 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.AEKeyType;
 import appeng.api.stacks.AEFluidKey;
-import java.util.List;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluids;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * 无限元件：内部恒有 2^63 - 1 个/ mB 对应物品/流体，储量不会变化，放入 ME 驱动器后可无限抽取。
@@ -64,13 +58,5 @@ public class InfiniteCellItem extends Item {
     /** 该元件恒定包含的 AEKey（圆石物品键 / 水、熔岩流体键） */
     public AEKey getInfiniteKey() {
         return type.key();
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        boolean fluid = type.keyType() == AEKeyType.fluids();
-        tooltip.add(Component.translatable(
-                fluid ? "item.aalink.infinite_cell.tooltip.fluid" : "item.aalink.infinite_cell.tooltip.item",
-                type.key().getDisplayName()));
     }
 }

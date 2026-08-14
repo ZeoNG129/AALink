@@ -5,7 +5,6 @@ import cn.autoforged.ae_auto_link_mod_1786445667.blockentity.AutoLinkBridge;
 import cn.autoforged.ae_auto_link_mod_1786445667.blockentity.WirelessConnectorBlockEntity;
 import appeng.api.networking.GridHelper;
 import appeng.api.networking.IGridNode;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -19,11 +18,9 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * 无线连接工具：把任意 AE 设备手动接入已绑定无线连接器所在的 ME 网络。
@@ -182,17 +179,5 @@ public class WirelessLinkTool extends Item {
         }
         AALinkSavedData.get(level).link(devicePos); // 持久化：重进存档后保持连接
         player.sendSystemMessage(Component.literal("设备已接入 AE 网络"));
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        if (isBound(stack)) {
-            CompoundTag binding = stack.getTag().getCompound(TAG_BINDING);
-            tooltip.add(Component.literal("已绑定: " + binding.getString(TAG_DIM) + " ("
-                    + binding.getInt(TAG_X) + ", " + binding.getInt(TAG_Y) + ", " + binding.getInt(TAG_Z) + ")"));
-        } else {
-            tooltip.add(Component.literal("未绑定 — 蹲下右键无线连接器绑定"));
-        }
-        tooltip.add(Component.literal("蹲下右键空气取消绑定；右键 AE 设备接入网络"));
     }
 }

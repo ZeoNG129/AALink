@@ -4,7 +4,5 @@
   "item.aalink.infinite_cobblestone_cell": "无限圆石元件",
   "item.aalink.infinite_water_cell": "无限水元件",
   "item.aalink.infinite_lava_cell": "无限熔岩元件",
-  "item.aalink.infinite_cell.tooltip.item": "内含 2^63-1 个%s，储量不会变化，可无限抽取",
-  "item.aalink.infinite_cell.tooltip.fluid": "内含 2^63-1 mB %s，储量不会变化，可无限抽取",
   "creativetab.aalink.main": "AALink"
 }
