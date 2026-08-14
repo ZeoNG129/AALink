@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "HHH",
+    "HWH",
+    "HHH"
+  ],
+  "key": {
+    "H": { "item": "ae2:fluid_cell_housing" },
+    "W": { "item": "minecraft:water_bucket" }
+  },
+  "result": {
+    "item": "aalink:infinite_water_cell"
+  }
+}

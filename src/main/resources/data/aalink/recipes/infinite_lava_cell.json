@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "HHH",
+    "HLH",
+    "HHH"
+  ],
+  "key": {
+    "H": { "item": "ae2:fluid_cell_housing" },
+    "L": { "item": "minecraft:lava_bucket" }
+  },
+  "result": {
+    "item": "aalink:infinite_lava_cell"
+  }
+}

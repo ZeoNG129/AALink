@@ -1,5 +1,10 @@
 {
   "block.aalink.wireless_connector": "Wireless Connector",
   "item.aalink.wireless_link_tool": "Wireless Link Tool",
+  "item.aalink.infinite_cobblestone_cell": "Infinite Cobblestone Cell",
+  "item.aalink.infinite_water_cell": "Infinite Water Cell",
+  "item.aalink.infinite_lava_cell": "Infinite Lava Cell",
+  "item.aalink.infinite_cell.tooltip.item": "Contains 2^63-1 %s. Amount never changes; extract infinitely.",
+  "item.aalink.infinite_cell.tooltip.fluid": "Contains 2^63-1 mB %s. Amount never changes; extract infinitely.",
   "creativetab.aalink.main": "AALink"
 }
