@@ -47,19 +47,23 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    // 本地 libs 存放 AE2 / GuideME jar
-    flatDir {
-        dir 'libs'
+    // Modrinth Maven —— 自动拉取 AE2 / GuideME（CI 环境也能下载）
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
     }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // AE2 (应用能源) —— 本 mod 硬前置，从本地 libs 引入
-    implementation fg.deobf("ae2:ae2:1.20.1")
+    // AE2 (应用能源) —— 本 mod 硬前置
+    implementation fg.deobf("maven.modrinth:ae2:7KVs6HMQ")
     // GuideME (AE2 的文档/依赖库)
-    implementation fg.deobf("guideme:guideme:1.20.1")
+    implementation fg.deobf("maven.modrinth:guideme:i7Tp1AHw")
 }
 
 tasks.named('processResources', ProcessResources).configure {
