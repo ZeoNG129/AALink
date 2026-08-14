@@ -51,7 +51,26 @@ public class WirelessLinkTool extends Item {
     }
 
     @Override
+    public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
+        // Forge 交互链最前端：返回非 PASS 时方块 use（打开 GUI）不会执行。
+        // 这里消费右键，保证手持工具右键方块时是"连接"而不是打开方块 UI。
+        return handleUse(context);
+    }
+
+    @Override
     public InteractionResult useOn(UseOnContext context) {
+        return handleUse(context);
+    }
+
+    /**
+     * 工具交互核心：
+     * <ul>
+     *   <li>右键无线连接器：蹲下=绑定，非蹲下=提示用蹲下绑定</li>
+     *   <li>蹲下右键其它方块：不消费，保持原语义</li>
+     *   <li>非蹲下右键其它方块：把该方块接入已绑定连接器所在网络，并阻止方块 UI 打开</li>
+     * </ul>
+     */
+    private InteractionResult handleUse(UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
         if (player == null) {
@@ -61,28 +80,26 @@ public class WirelessLinkTool extends Item {
         BlockPos pos = context.getClickedPos();
         BlockEntity be = level.getBlockEntity(pos);
 
-        // 蹲下右键无线连接器 → 绑定
-        if (player.isShiftKeyDown()) {
-            if (be instanceof WirelessConnectorBlockEntity) {
-                if (!level.isClientSide) {
+        // 右键无线连接器：蹲下=绑定，否则提示
+        if (be instanceof WirelessConnectorBlockEntity) {
+            if (!level.isClientSide) {
+                if (player.isShiftKeyDown()) {
                     bind(stack, level, pos);
                     player.sendSystemMessage(Component.literal(
                             "无线连接工具已绑定: " + level.dimension().location() + " " + pos.toShortString()));
+                } else {
+                    player.sendSystemMessage(Component.literal("请蹲下右键无线连接器进行绑定"));
                 }
-                return InteractionResult.sidedSuccess(level.isClientSide);
-            }
-            return InteractionResult.PASS; // 蹲下右键其它方块：不消费
-        }
-
-        // 非蹲下右键无线连接器：提示用蹲下绑定
-        if (be instanceof WirelessConnectorBlockEntity) {
-            if (!level.isClientSide) {
-                player.sendSystemMessage(Component.literal("请蹲下右键无线连接器进行绑定"));
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
-        // 非蹲下右键其它方块：尝试接入网络
+        // 蹲下右键其它方块：不消费，交给方块/其它逻辑处理
+        if (player.isShiftKeyDown()) {
+            return InteractionResult.PASS;
+        }
+
+        // 非蹲下右键其它方块：尝试接入网络，并消费交互阻止方块 UI 打开
         if (!level.isClientSide) {
             connectDevice((ServerLevel) level, player, stack, pos);
         }
