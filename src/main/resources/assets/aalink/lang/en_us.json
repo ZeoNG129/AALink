@@ -1,8 +1,5 @@
 {
   "block.aalink.wireless_connector": "Wireless Connector",
   "item.aalink.wireless_link_tool": "Wireless Link Tool",
-  "item.aalink.infinite_cobblestone_cell": "Infinite Cobblestone Cell",
-  "item.aalink.infinite_water_cell": "Infinite Water Cell",
-  "item.aalink.infinite_lava_cell": "Infinite Lava Cell",
   "creativetab.aalink.main": "AALink"
 }

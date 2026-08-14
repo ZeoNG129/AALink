@@ -19,15 +19,6 @@ public class ModItems {
     public static final RegistryObject<Item> WIRELESS_LINK_TOOL = ITEMS.register("wireless_link_tool",
         () -> new WirelessLinkTool(new Item.Properties().stacksTo(1)));
 
-    public static final RegistryObject<Item> INFINITE_COBBLESTONE_CELL = ITEMS.register("infinite_cobblestone_cell",
-        () -> new InfiniteCellItem(InfiniteCellItem.Type.COBBLESTONE, new Item.Properties().stacksTo(1)));
-
-    public static final RegistryObject<Item> INFINITE_WATER_CELL = ITEMS.register("infinite_water_cell",
-        () -> new InfiniteCellItem(InfiniteCellItem.Type.WATER, new Item.Properties().stacksTo(1)));
-
-    public static final RegistryObject<Item> INFINITE_LAVA_CELL = ITEMS.register("infinite_lava_cell",
-        () -> new InfiniteCellItem(InfiniteCellItem.Type.LAVA, new Item.Properties().stacksTo(1)));
-
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
     }

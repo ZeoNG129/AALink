@@ -21,9 +21,6 @@ public class ModCreativeTabs {
             .displayItems((params, output) -> {
                 output.accept(ModBlocks.WIRELESS_CONNECTOR.get());
                 output.accept(ModItems.WIRELESS_LINK_TOOL.get());
-                output.accept(ModItems.INFINITE_COBBLESTONE_CELL.get());
-                output.accept(ModItems.INFINITE_WATER_CELL.get());
-                output.accept(ModItems.INFINITE_LAVA_CELL.get());
             })
             .build());
 
