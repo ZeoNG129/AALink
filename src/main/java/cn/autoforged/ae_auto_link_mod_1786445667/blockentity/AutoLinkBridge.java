@@ -33,8 +33,40 @@ public final class AutoLinkBridge {
     /** 已知承载 AE 网格节点的方块实体类型缓存：同一类型方块只需查询一次 getNodeHost */
     private static final Set<net.minecraft.world.level.block.entity.BlockEntityType<?>> KNOWN_NODE_HOST_TYPES =
             Collections.synchronizedSet(new HashSet<>());
+    /** 自动连接总开关：关闭时放置设备不会自动连接，但已建立的连接保持不断开 */
+    private static volatile boolean enabled = false;
 
     private AutoLinkBridge() {
+    }
+
+    public static boolean isEnabled() {
+        return enabled;
+    }
+
+    public static void setEnabled(boolean value) {
+        enabled = value;
+        saveToData();
+    }
+
+    public static void toggleEnabled() {
+        enabled = !enabled;
+        saveToData();
+    }
+
+    /** 修改开关后写入世界存档，保证重启/重进后状态保持 */
+    private static void saveToData() {
+        net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) {
+            return;
+        }
+        for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
+            AALinkSavedData.get(level).setEnabled(enabled);
+        }
+    }
+
+    /** 世界加载后从存档恢复开关状态（server ticking 前调用） */
+    static void loadFromData(net.minecraft.server.level.ServerLevel level) {
+        enabled = AALinkSavedData.get(level).isEnabled();
     }
 
     static void registerHub(IGridNode node) {
@@ -51,6 +83,9 @@ public final class AutoLinkBridge {
 
     @SubscribeEvent
     public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (!enabled) {
+            return; // 自动连接开关关闭：放置设备不自动连接
+        }
         if (!(event.getLevel() instanceof ServerLevel serverLevel)) {
             return; // 只在服务端处理
         }
@@ -80,10 +115,22 @@ public final class AutoLinkBridge {
     /**
      * 服务端 tick 时尝试解析尚未建连的设备节点并桥接。由 Forge 事件总线注册。
      */
+    /** 服务端首次 tick 时从存档恢复开关状态（重启/重进后保持） */
+    private static boolean loaded = false;
+
     @SubscribeEvent
     public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
         if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) {
             return;
+        }
+        if (!loaded) {
+            loaded = true;
+            net.minecraft.server.MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server != null) {
+                for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
+                    loadFromData(level);
+                }
+            }
         }
         if (HUBS.isEmpty() || PENDING.isEmpty()) {
             return;
@@ -99,6 +146,8 @@ public final class AutoLinkBridge {
      */
     @SubscribeEvent
     public static void onChunkLoad(net.minecraftforge.event.level.ChunkEvent.Load event) {
+        // 区块加载重连不受开关影响：这是恢复已建立的连接，不是自动连接新设备。
+        // 这样即使开关关闭，服务器重启/重进后已连接设备也能恢复。
         if (!(event.getLevel() instanceof ServerLevel serverLevel)) {
             return;
         }
