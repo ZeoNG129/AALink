@@ -81,6 +81,17 @@ public final class AutoLinkBridge {
         }
     }
 
+    /**
+     * 中枢节点（重新）创建后，把本维度所有"曾经成功桥接"的设备重新加入待桥接队列。
+     * 解决：中枢区块卸载→重载后，其它仍处于加载状态区块的设备不会触发放置/区块加载事件，
+     * 导致它们与中枢的逻辑连接丢失且不自动恢复。
+     */
+    static void requeueLinked(ServerLevel level) {
+        for (BlockPos pos : AALinkSavedData.get(level).getLinkedPositions()) {
+            PENDING.add(new PlacementRef(level, pos));
+        }
+    }
+
     @SubscribeEvent
     public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
         if (!enabled) {
@@ -136,6 +147,20 @@ public final class AutoLinkBridge {
             return;
         }
         bridgePending();
+    }
+
+    /**
+     * 服务器停止（含单机退出世界）时清空跨存档的静态状态。
+     * 单机"退出世界→回标题→进另一个存档"时，若不清空，HUBS/PENDING 会残留
+     * 上一个存档已销毁的 IGridNode/ServerLevel 引用，导致节点指向无效网格。
+     */
+    @SubscribeEvent
+    public static void onServerStopping(net.minecraftforge.event.server.ServerStoppingEvent event) {
+        HUBS.clear();
+        PENDING.clear();
+        KNOWN_NODE_HOST_TYPES.clear();
+        enabled = false;
+        loaded = false;
     }
 
     /**

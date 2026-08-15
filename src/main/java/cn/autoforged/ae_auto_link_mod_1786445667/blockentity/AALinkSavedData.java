@@ -61,6 +61,11 @@ public class AALinkSavedData extends SavedData {
         }
     }
 
+    /** 返回本维度已桥接设备位置的只读副本（供中枢节点重建后批量重连）。 */
+    public Set<BlockPos> getLinkedPositions() {
+        return new HashSet<>(linked);
+    }
+
     @Override
     public CompoundTag save(CompoundTag tag) {
         tag.putBoolean(KEY_ENABLED, enabled);

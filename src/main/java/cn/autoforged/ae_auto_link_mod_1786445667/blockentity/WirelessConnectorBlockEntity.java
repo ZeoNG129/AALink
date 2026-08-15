@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -59,6 +60,11 @@ public class WirelessConnectorBlockEntity extends BlockEntity implements IInWorl
         this.mainNode.create(this.level, this.worldPosition);
         // 登记为桥接中枢，供 AutoLinkBridge 将任意放置的 AE 设备接入本网络。
         AutoLinkBridge.registerHub(this.mainNode.getNode());
+        // 中枢节点（重新）创建后，把本维度已桥接设备重新接入网络：
+        // 中枢区块卸载→重载时，其它仍加载中的设备不会触发放置/区块加载事件，需在此主动重连。
+        if (this.level instanceof ServerLevel serverLevel) {
+            AutoLinkBridge.requeueLinked(serverLevel);
+        }
     }
 
     public IGridNode getHubNode() {
