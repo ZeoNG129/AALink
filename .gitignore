@@ -30,3 +30,7 @@ libs/
 .oss-basemod-repo/
 TEMPLATE_LICENSE.txt
 *.jar
+
+# 运行时附件目录与 agent 维护记忆，不上传
+.opensquilla/
+MEMORY.md
